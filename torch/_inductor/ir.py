@@ -433,10 +433,7 @@ def is_cpu(x: Union[IRNode, torch.device, None, str]) -> bool:
     return get_device_type(x) == "cpu"
 
 
-def is_aligned_realized_tensor_hint(
-    x: Union[Buffer, TensorBox], alignment: int
-) -> bool:
-    # Use this as a hint. This won't guard since size_hint doesn't guard.
+def is_aligned_realized_tensor(x: Union[Buffer, TensorBox], alignment: int) -> bool:
     if (
         not isinstance(x, IRNode)
         or x.maybe_get_stride() is None
@@ -445,15 +442,15 @@ def is_aligned_realized_tensor_hint(
     ):
         return False
 
+    # Make sure to guard to recompile when necessary.
     aligned_strides = all(
-        (V.graph.sizevars.size_hint_or_throw(x.get_stride()[i]) % alignment) == 0
+        (V.graph.sizevars.guard_or_false(sympy.Eq(x.get_stride()[i] % alignment, 0)))
         for i in range(len(x.get_stride()) - 1)
     )
-    # if the last dim size is <= 1, stride doesn't matter
-    aligned_last_dim = (
-        V.graph.sizevars.size_hint_or_throw(x.get_stride()[-1]) == 1
-        or V.graph.sizevars.size_hint_or_throw(x.get_size()[-1]) <= 1
-    )
+    aligned_last_dim = V.graph.sizevars.guard_or_false(
+        sympy.Eq(x.get_stride()[-1], 1)
+    ) or V.graph.sizevars.guard_or_false(sympy.Le(x.get_size()[-1], 1))
+
     return aligned_last_dim and aligned_strides
 
 
