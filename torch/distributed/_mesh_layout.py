@@ -74,6 +74,16 @@ class _MeshLayout(Layout):
         layout = super().__getitem__(i)
         return _MeshLayout(layout.shape, layout.stride)
 
+    def __getstate__(self) -> dict[str, IntTuple]:
+        return {
+            "shape": self.shape,
+            "stride": self.stride,
+        }
+
+    def __setstate__(self, state: dict[str, IntTuple]) -> None:
+        object.__setattr__(self, "shape", state["shape"])
+        object.__setattr__(self, "stride", state["stride"])
+
     def coalesce(self) -> "_MeshLayout":
         """
         A layout is represented by (sizes):(strides), e.g. (3,2):(4,2).
@@ -210,3 +220,14 @@ class _MeshLayout(Layout):
             [group_offset + group_rank for group_rank in self.member_ranks()]
             for group_offset in self.complement(world_size).member_ranks()
         ]
+
+    def check_overlap(self) -> bool:
+        """
+        Check if the layout has any overlap between the ranks.
+        """
+        previous_span = 1
+        for size, stride in sorted(self.sizes_and_strides, key=lambda x: x[1]):
+            if size * stride <= previous_span:
+                return False
+            previous_span = size * stride
+        return True
