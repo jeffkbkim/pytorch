@@ -7233,7 +7233,6 @@ class TestCompileKernel(TestCase):
         """
 
         from torch.cuda import _compile_kernel
-        import torch.utils.dlpack
 
         add_kernel = _compile_kernel(kernel_source, "add_tensors")
 
