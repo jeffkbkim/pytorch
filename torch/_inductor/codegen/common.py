@@ -2038,7 +2038,7 @@ class Kernel(CodeGen, Generic[CSEVariableType]):
         self.num_load = 0
         self.num_reduction = 0
 
-        self.cse: CSE[CSEVariableType, Any] = CSE(self.newvar_prefix, self.suffix)
+        self.cse: CSE[CSEVariableType] = CSE(self.newvar_prefix, self.suffix)
         self.must_keep_buffers: OrderedSet[str] = OrderedSet()
         self.store_buffer_names: OrderedSet[str] = OrderedSet()
         self._load_mask: Optional[str] = None
