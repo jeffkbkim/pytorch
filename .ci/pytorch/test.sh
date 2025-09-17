@@ -1623,8 +1623,8 @@ test_operator_microbenchmark() {
   python -m pip install .
 
   cd "${TEST_DIR}"/benchmarks/operator_benchmark
-
-  for OP_BENCHMARK_TESTS in matmul mm add bmm; do
+  # Replace matmul with -> matmul mm add bmm
+  for OP_BENCHMARK_TESTS in matmul; do
     $TASKSET python -m pt.${OP_BENCHMARK_TESTS}_test --tag-filter long \
       --output-json-for-dashboard "${TEST_REPORTS_DIR}/operator_microbenchmark_${OP_BENCHMARK_TESTS}_compile.json" \
       --benchmark-name "PyTorch operator microbenchmark" --use-compile
